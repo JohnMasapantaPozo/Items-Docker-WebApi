@@ -78,7 +78,11 @@ namespace WebApiDEMO
             
             services.AddSingleton<IItemsRepository, MongoDbItemsRepository>();
 
-            services.AddControllers();
+
+            services.AddControllers(options => {
+                options.SuppressAsyncSuffixInActionNames = false;       // Keeps the Async sufixes for the methods e.g., nameof(GetItemAsync)
+            });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiDEMO", Version = "v1" });

@@ -1,17 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WebApiDEMO.Repositories
 {
     public interface IItemsRepository
     {
-        Item GetItem(Guid id);
-        IEnumerable<Item> GetItems();
+        /* We are making all methods async.
+            Renaming and turning them into Tasks.
+            This means that each method will reference
+            a task that will be completed eventually.
+        */
 
-        void CreateItem(Item item);
+        Task<Item> GetItemAsync(Guid id);
+        Task<IEnumerable<Item>> GetItemsAsync();
 
-        void UpdateItem(Item item);
+        Task CreateItemAsync(Item item);
 
-        void DeleteItem(Guid id);
+        Task UpdateItemAsync(Item item);
+
+        Task DeleteItemAsync(Guid id);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -7,6 +8,16 @@ namespace WebApiDEMO.Repositories
 {
     class MongoDbItemsRepository : IItemsRepository
     {
+        /* MongoDbItemsRepository
+            Implementation fof the IItemsRepository interface
+
+            Turned all methods into async Tasks to gain efficiency and
+            to fullfill the IItemsRepository interface definition.
+
+            async Task "MethodName"
+                await "Implementation"
+        */
+        
         private const string dataBaseName = "catalog";
 
         private const string collectionName = "items";
@@ -21,35 +32,35 @@ namespace WebApiDEMO.Repositories
             this.itemsCollection = database.GetCollection<Item>(collectionName);
         }
         
-        public IEnumerable<Item> GetItems()
+        public async Task<IEnumerable<Item>> GetItemsAsync()
         {
-            return itemsCollection.Find(
+            return await itemsCollection.Find(
                 new BsonDocument()
-            ).ToList();
+            ).ToListAsync();
         }
 
-        public Item GetItem(Guid id)
+        public async Task<Item> GetItemAsync(Guid id)
         {
             // Need a filter definition builder.
             var filter = filterBuilder.Eq(item => item.Id, id);
-            return itemsCollection.Find(filter).SingleOrDefault();
+            return await itemsCollection.Find(filter).SingleOrDefaultAsync();
         }
 
-        public void CreateItem(Item item)
+        public async Task CreateItemAsync(Item item)
         {
-            itemsCollection.InsertOne(item);
+            await itemsCollection.InsertOneAsync(item);
         }
 
-        public void UpdateItem(Item item)
+        public async Task UpdateItemAsync(Item item)
         {
             var filter = filterBuilder.Eq(existingItem => existingItem.Id, item.Id);
-            itemsCollection.ReplaceOne(filter, item);
+            await itemsCollection.ReplaceOneAsync(filter, item);
         }
 
-        public void DeleteItem(Guid id)
+        public async Task DeleteItemAsync(Guid id)
         {
             var filter = filterBuilder.Eq(existingItem => existingItem.Id, id);
-            itemsCollection.DeleteOne(filter);
+            await itemsCollection.DeleteOneAsync(filter);
         }
     }
 }

@@ -6,6 +6,9 @@
     - How to implement a controler with GET routes to retrieve resources.
     - How to implement a simple MongoDB
     - How to run a MongoDB in a docker container
+    - Tasks, Async, and Wait in .NET: Asynchronous Programing
+        In our context we will implement an "Async all the way" strategy.
+        User -> Controller -> DataRepository -> Database (All -> are async)
 ```
 
 ```shell

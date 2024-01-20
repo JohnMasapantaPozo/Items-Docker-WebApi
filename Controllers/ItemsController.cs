@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WebApiDEMO.Dtos;
 using WebApiDEMO.Repositories;
@@ -16,16 +17,22 @@ namespace WebApiDEMO.Controllers
     [Route("[controller]")]
     public class ItemsController : ControllerBase
     {
-        /*
-        NOTE: This snipped was changed by an interface to avoid a brand new repository to be created
-        every time we send a Http request. As ItemsController is instantiated every time we send a request.
-        Now the repository is created out of this class, within Startup.
+        /* NOTE: This snipped was changed by an interface to avoid a brand new
+            repository to be created every time we send a Http request. As
+            ItemsController is instantiated every time we send a request.
+            Now the repository is created out of this class, within Startup.
 
         private readonly InMemoryItemsRepository repository;
+
         public ItemsController()
         {
             repository = new InMemoryItemsRepository();
         }
+
+          Async:
+            Turned all methods into async Tasks to gain efficiency and
+            to fullfill the IItemsRepository interface definition and 
+            MongoDbItemsRepository interface implementation.
         */
 
         private readonly IItemsRepository repository;
@@ -41,21 +48,22 @@ namespace WebApiDEMO.Controllers
         Created an Extension static class to handle this.*/
 
         [HttpGet]
-        public IEnumerable<ItemDto> GetItems()
+        public async Task<IEnumerable<ItemDto>> GetItemsAsync()
         {
-            var items = repository.GetItems().Select(
+            var items = (await this.repository.GetItemsAsync())
+            .Select(
                 // item => item.AsDto() OR
                 item => Extensions.AsDto(item)
-                );
+            );
 
             return items;
         }
 
         // Route: GET/items/id
-        [HttpGet("{id}", Name = nameof(GetItem))]
-        public ActionResult<ItemDto> GetItem(Guid id)
+        [HttpGet("{id}", Name = nameof(GetItemAsync))]
+        public async Task<ActionResult<ItemDto>> GetItemAsync(Guid id)
         {
-            var item = repository.GetItem(id:id);
+            var item = await this.repository.GetItemAsync(id:id);
 
             if (item is null)
             {
@@ -69,7 +77,7 @@ namespace WebApiDEMO.Controllers
 
         // Route: POST/items
         [HttpPost]
-        public ActionResult<ItemDto> CreateItem(CreateItemDto itemDto)
+        public async Task<ActionResult<ItemDto>> CreateItemAsync(CreateItemDto itemDto)
         {
             Item item = new(){
                 Id = Guid.NewGuid(),
@@ -78,12 +86,10 @@ namespace WebApiDEMO.Controllers
                 CreatedDate = DateTimeOffset.UtcNow
             };
 
-            this.repository.CreateItem(item);
+            await this.repository.CreateItemAsync(item);
 
-            return CreatedAtAction(
-
-                /* CreatedAtAction heps us creating the location URL
-                where our newly created resurce can be found.
+            /* CreatedAtAction:
+                Heps us creating the location URL where our newly created resurce can be found.
 
                 Response e.g., 
 
@@ -91,8 +97,10 @@ namespace WebApiDEMO.Controllers
                 date: Sat20 Jan 2024 12:38:08 GMT 
                 location: https://localhost:5001/Items/b2a1186d-cf1d-4d27-829d-072c2a8cf1dd 
                 server: Kestrel
-                */
-                nameof(GetItem),
+            */
+
+            return CreatedAtAction(
+                nameof(GetItemAsync),
                 new { id = item.Id },
                 item.AsDto()
             );
@@ -100,9 +108,9 @@ namespace WebApiDEMO.Controllers
 
         // Route: UPDATE/items/{id}
         [HttpPut("{id}")]
-        public ActionResult UpdateItem(Guid id, UpdateItemDto itemDto)
+        public async Task<ActionResult> UpdateItemAsync(Guid id, UpdateItemDto itemDto)
         {
-            var existingItem = repository.GetItem(id);
+            var existingItem = await this.repository.GetItemAsync(id);
             if (existingItem is null)
             {
                 return NotFound();
@@ -113,22 +121,22 @@ namespace WebApiDEMO.Controllers
                 Price = itemDto.Price                
             };
 
-            this.repository.UpdateItem(updatedItem);
+            await this.repository.UpdateItemAsync(updatedItem);
 
             return NoContent();
         }
 
         // Route: DELETE/items/{id}
         [HttpDelete("{id}")]
-        public ActionResult DeleteItem(Guid id)
+        public async Task<ActionResult> DeleteItemAsync(Guid id)
         {
-            var existingItem = repository.GetItem(id);
+            var existingItem = await this.repository.GetItemAsync(id);
             if (existingItem is null)
             {
                 return NotFound();
             }
 
-            this.repository.DeleteItem(id);
+            await this.repository.DeleteItemAsync(id);
 
             return NoContent();
         }
