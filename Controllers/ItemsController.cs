@@ -52,7 +52,7 @@ namespace WebApiDEMO.Controllers
         }
 
         // Route: GET/items/id
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = nameof(GetItem))]
         public ActionResult<ItemDto> GetItem(Guid id)
         {
             var item = repository.GetItem(id:id);
@@ -65,6 +65,72 @@ namespace WebApiDEMO.Controllers
             // return item => Extensions.AsDto(item) // OR
             return item.AsDto();
             
+        }
+
+        // Route: POST/items
+        [HttpPost]
+        public ActionResult<ItemDto> CreateItem(CreateItemDto itemDto)
+        {
+            Item item = new(){
+                Id = Guid.NewGuid(),
+                Name = itemDto.Name,
+                Price = itemDto.Price,
+                CreatedDate = DateTimeOffset.UtcNow
+            };
+
+            this.repository.CreateItem(item);
+
+            return CreatedAtAction(
+
+                /* CreatedAtAction heps us creating the location URL
+                where our newly created resurce can be found.
+
+                Response e.g., 
+
+                content-type: application/json; charset=utf-8 
+                date: Sat20 Jan 2024 12:38:08 GMT 
+                location: https://localhost:5001/Items/b2a1186d-cf1d-4d27-829d-072c2a8cf1dd 
+                server: Kestrel
+                */
+                nameof(GetItem),
+                new { id = item.Id },
+                item.AsDto()
+            );
+        }
+
+        // Route: UPDATE/items/{id}
+        [HttpPut("{id}")]
+        public ActionResult UpdateItem(Guid id, UpdateItemDto itemDto)
+        {
+            var existingItem = repository.GetItem(id);
+            if (existingItem is null)
+            {
+                return NotFound();
+            }
+
+            Item updatedItem = existingItem with {
+                Name = itemDto.Name,
+                Price = itemDto.Price                
+            };
+
+            this.repository.UpdateItem(updatedItem);
+
+            return NoContent();
+        }
+
+        // Route: DELETE/items/{id}
+        [HttpDelete("{id}")]
+        public ActionResult DeleteItem(Guid id)
+        {
+            var existingItem = repository.GetItem(id);
+            if (existingItem is null)
+            {
+                return NotFound();
+            }
+
+            this.repository.DeleteItem(id);
+
+            return NoContent();
         }
     }
 }
