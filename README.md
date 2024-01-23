@@ -28,9 +28,7 @@
 ```shell
         # Spin up a database with authentication enabled
         # -> Update the service to make it aware about authentication.
-        docker run -d --rm --name mongo -p 27017:27017 -v mongo:/data/db
-        -e MONGO_INITDB_ROOT_USERNAME=mongoadmin
-        -e MONGO_INITDB_ROOT_PASSWORD=password123 mongo
+        docker run -d --rm --name mongo -p 27017:27017 -v mongo:/data/db -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=password123 mongo
 
         # Setting admin password in the .NET secrets manager
         dotnet user-secrets init
@@ -47,7 +45,27 @@
 ```
 ```text
     9. Challenges of deployment.
-    10. Docker review.
-    11. Turn REST API into a Docker Image.
-    12. Run a REST API as a Dokcer Container.
+    10. Turn REST API into a Docker Image.
+    11. Run a REST API as a Dokcer Container.
+        
+        Two docker images/containers to be created ans spinned up.
+        One for the API and another one for the database.
+        They will communicate througth a docker network.
+
+        Docker hub to be used to publish the docker image.
+```
+
+```shell
+        # Create docker image for the REST API
+        docker build -t webapidemo:v1 .
+        
+        # Create a network
+        docker network create webapinet
+        docker network ls
+
+        # Spin up the database container and joing the network
+        docker run -d --rm --name mongo -p 27017:27017 -v mongo:/data/db -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=password123 --network=webapinet mongo
+
+        # Spin up the API container and join the network
+        docker run -it --rm -p 8080:80 -e MongoDbConfig:Host=mongo -e MongoDbConfig:Password=password123 --network=webapinet webapidemo:v1
 ```
