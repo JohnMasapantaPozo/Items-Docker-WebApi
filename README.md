@@ -54,7 +54,6 @@
 
         Docker hub to be used to publish the docker image.
 ```
-
 ```shell
         # Create docker image for the REST API
         docker build -t webapidemo:v1 .
@@ -68,4 +67,18 @@
 
         # Spin up the API container and join the network
         docker run -it --rm -p 8080:80 -e MongoDbConfig:Host=mongo -e MongoDbConfig:Password=password123 --network=webapinet webapidemo:v1
+
+        ## Publish to docker hub and let anyone pull and run it from the internet.
+
+        docker login -u johnmasapantapozo -p "password in .env"
+        docker tag webapidemo:v1 johnmasapantapozo/webapidemo:v1
+        docker push johnmasapantapozo/webapidemo:v1
+
+        ## Anyone can now download and run the image from docker hub
+        docker run -it --rm -p 8080:80 -e MongoDbConfig:Host=mongo -e MongoDbConfig:Password=password123 --network=webapinet johnmasapantapozo/webapidemo:v1
+```
+```text
+    12. Container Orchestrators.
+    13. Kubernetes basic componets.
+    14. Setup kubernetes clusted and deplot the API to it.
 ```
