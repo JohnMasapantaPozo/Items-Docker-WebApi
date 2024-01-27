@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapidemo-deployment
+spec:
+  selector:
+    matchLabels:
+      app: webapidemo
+  template:
+    metadata:
+      labels:
+        app: webapidemo
+    spec:
+      containers:
+        - name: webapidemo
+          image: johnmasapantapozo/webapidemo:v1
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+          env:
+            - name: MongoDbConfig__Host
+              value: mongodb-service
+            - name: MongoDbConfig__User
+              value: moongoadmin
+            - name: MongoDbConfig__Password
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: Password
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapidemo-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: webapidemo
+  ports:
+    - port: 80
+      targetPort: 80
