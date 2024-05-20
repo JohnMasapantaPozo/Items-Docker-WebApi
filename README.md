@@ -1,84 +1,37 @@
-### Documentation
+# README - REST API Development
 
-```text
-    1. How to model an entity via C# record types.
-    2. How to implement and in memory repository of resources.
-    3. How to implement a controler with GET routes to retrieve resources.
-    4. How to implement a simple MongoDB
-```
-```text
-    5. How to run a MongoDB in a docker container
-```
+This README file provides an overview of the REST API development process used to create an simple API and its main CRUD operations. Additionally, the README covers how to set up and run a MongoDB in a Docker container, and how to implement asynchronous programming using the "async all the way" pattern.
 
-```shell
-        # Spin up a database without authentication enabled
-        docker run -d --rm --name mongo  -p 27017:27017 -v
-        docker ps
-        docker stop mongo
-        docker volume ls
-```
-```text
-    6. Tasks, Async, and Wait in .NET: Asynchronous Programing
-        In our context we will implement an "Async all the way" strategy.
-        User -> Controller -> DataRepository -> Database (All -> are async)
+## Getting Started
+To get started, follow the steps outlined below:
 
-    7. Secret Manegement (.NET secret manager).
-        By enabling user/password in the database we require to let the API know how to use those values.
-```
-```shell
-        # Spin up a database with authentication enabled
-        # -> Update the service to make it aware about authentication.
-        docker run -d --rm --name mongo -p 27017:27017 -v mongo:/data/db -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=password123 mongo
+1. Clone the repository to your local machine.
+2. Install the required dependencies.
+3. Create a MongoDB instance either via Docker container or a cloud service provider.
+4. Configure your MongoDB instance with your preferred security settings (e.g. authentication).
+5. Open the appsettings.Development.json configuration file and update the MongoDB server connection string to match the connection details of your MongoDB instance.
 
-        # Setting admin password in the .NET secrets manager
-        dotnet user-secrets init
-        dotnet user-secrets set MongoDbConfig:Password password123
-```
-```text
-    8. API and API dependancies healt checks.
-        New endpoint added to provide the API health status.
-        Common healt checks include: /health, /health/ready, health/live.
-```
-```shell
-        # Let's use this open source package to health check our database connection.
-        dotnet add package AspNetCore.HealthChecks.MongoDb
-```
-```text
-    9. Challenges of deployment.
-    10. Turn REST API into a Docker Image.
-    11. Run a REST API as a Dokcer Container.
-        
-        Two docker images/containers to be created ans spinned up.
-        One for the API and another one for the database.
-        They will communicate througth a docker network.
+## Development Process
 
-        Docker hub to be used to publish the docker image.
-```
-```shell
-        # Create docker image for the REST API
-        docker build -t webapidemo:v1 .
-        
-        # Create a network
-        docker network create webapinet
-        docker network ls
+During the development process, the following steps were followed:
 
-        # Spin up the database container and joing the network
-        docker run -d --rm --name mongo -p 27017:27017 -v mongo:/data/db -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=password123 --network=webapinet mongo
+1. Modeling the data entity - C# record types were used to define the structure of the API's data entity.
+2. Implementing an in-memory repository - An in-memory repository was implemented to store and retrieve resources.
+3. Implementing a controller with GET routes - A controller was implemented to allow clients to retrieve data resources.
+4. Replace the in-memory repository by a MongoDB instance via Docker - A MongoDB instance was set up using Docker. A Dockerfile and docker-compose.yml file were used to set up the instance.
+5. Enabling authentication in the MongoDB instance and configuring it in the API - Authentication was enabled in the MongoDB instance and configured in the API using .NET Secret Manager.
+6. Implementing asynchronous programming - Asynchronous programming was implemented using the "async all the way" pattern.
+7. Implementing health checks - Health checks were implemented to ensure that the API and dependencies were working correctly.
+8. Deploying the API as a Docker container - The API was deployed as a Docker container, and the MongoDB instance was also set up as a Docker container.
+9. Configuring Kubernetes and deploying the API to it - Kubernetes was set up, and the API was deployed to the Kubernetes cluster.
 
-        # Spin up the API container and join the network
-        docker run -it --rm -p 8080:80 -e MongoDbConfig:Host=mongo -e MongoDbConfig:Password=password123 --network=webapinet webapidemo:v1
+## Deploying the API
 
-        ## Publish to docker hub and let anyone pull and run it from the internet.
+To deploy the API to a production environment, follow the steps below:
 
-        docker login -u johnmasapantapozo -p "password in .env"
-        docker tag webapidemo:v1 johnmasapantapozo/webapidemo:v1
-        docker push johnmasapantapozo/webapidemo:v1
+1. Create a Docker image of the API using the docker build command.
+2. Push the Docker image to a Docker registry (e.g. Docker Hub or Amazon ECR).
+3. Set up a Kubernetes cluster on your preferred cloud service provider (e.g. Google Kubernetes Engine, Amazon EKS).
+4. Deploy the API to the Kubernetes cluster using a .yaml configuration file
 
-        ## Anyone can now download and run the image from docker hub
-        docker run -it --rm -p 8080:80 -e MongoDbConfig:Host=mongo -e MongoDbConfig:Password=password123 --network=webapinet johnmasapantapozo/webapidemo:v1
-```
-```text
-    12. Container Orchestrators.
-    13. Kubernetes basic componets.
-    14. Setup kubernetes clusted and deplot the API to it.
-```
+See Dev-notes.md for more detailed information.
